@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const authenticate = require('../middleware/authenticate');
 const DepositHistory = require('../model/depositSchema');
 const SureWin = require('../model/surewinScema');
+const WithdrawHistory = require('../model/withdrawScema');
 require('../db/conn')
 
 router.get('/', (req, res) => {
@@ -310,6 +311,73 @@ router.put('/surewin/:email', async (req, res) =>{
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+//withdraw history
+
+
+router.post('/withdrawHistory', async (req, res) => {
+    const {name, email, phone, withdraw } = req.body;
+
+    if(!name || !email || !phone || !withdraw ) {
+        return res.status(422).json({error: "Plz filled the field properly"})
+    }
+
+    // Create a new Date object to get the current date and time
+    const currentDate = new Date();
+
+    // Get the individual components (minute, hour, date, month, and year)
+    const currentMinute = currentDate.getMinutes();
+    const currentHour = currentDate.getHours();
+    const currentDateOfMonth = currentDate.getDate();
+    const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
+    const currentYear = currentDate.getFullYear();
+
+    // Display the results
+    let time = (`${currentMinute}:${currentHour}`);
+    let date = (`${currentDateOfMonth}/${currentMonth}/${currentYear}`);
+
+
+    try {
+       
+        const depositHistory = new WithdrawHistory({name, email, phone, withdraw, date:date, time: time, request: 'Pending'  })
+
+        await depositHistory.save();
+        return res.status(201).json({message: "Withdraw Request Submitted successfully"});
+    
+    } catch (err) {
+        console.log(err)
+    }
+  });
+
+  router.get('/withdrawHistory', async (req, res)=>{
+    try {
+       const result = await WithdrawHistory.find();
+    return res.send(result);
+    } catch (error) {
+       console.log(error);
+    }
+ })
+
+ 
+ router.put('/withdrawHistory/:_id', async (req, res)=>{
+    const { _id } = req.params;
+    const {request} = req.body;
+    try{
+        if(request !== 'Accepted' && request !== 'Rejected'){
+            return res.status(400).json({ error: 'Invalid status value. Status must be either "accepted" or "rejected".' });
+        }
+
+        const updateDepositHistory = await WithdrawHistory.updateOne({ _id }, {request});
+        if (!updateDepositHistory) {
+            return res.status(404).json({ error: 'Deposit record not found' });
+          }
+      
+          return res.json(updateDepositHistory);
+    } catch (err){
+        console.log(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+  })
 
 
 
