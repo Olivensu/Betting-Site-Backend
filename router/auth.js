@@ -1,10 +1,12 @@
 const express = require('express');
 const User = require('../model/userSchema');
 const router = express.Router();
+const cron = require('node-cron');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const authenticate = require('../middleware/authenticate');
 const DepositHistory = require('../model/depositSchema');
+const SureWin = require('../model/surewinScema');
 require('../db/conn')
 
 router.get('/', (req, res) => {
@@ -225,7 +227,90 @@ router.put('/users/:email', async (req, res)=>{
     }
   })
 
- 
+
+  router.get('/surewin', async (req, res) => {
+    const result = await SureWin.find();
+    return res.send(result)
+  })
+
+  router.post('/surewin', async (req, res) => {
+    
+    const {name, email, phone, deposite} = req.body;
+
+    if(!name || !email || !phone || !deposite){
+        return res.status(404).json({ error: 'All item are not filled' });
+    }
+
+    // Create a new Date object to get the current date and time
+    const currentDate = new Date();
+
+    // Get the individual components (minute, hour, date, month, and year)
+    const currentMinute = currentDate.getMinutes();
+    const currentHour = currentDate.getHours();
+    const currentDateOfMonth = currentDate.getDate();
+    const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
+    const currentYear = currentDate.getFullYear();
+
+    // Display the results
+    let time = (`${currentMinute}:${currentHour}`);
+    let date = (`${currentDateOfMonth}/${currentMonth}/${currentYear}`);
+
+    try {
+        const sureWin = new SureWin({name, email, phone, deposite, winmoney: deposite, date:date, time: time, lastInterestCalculationDate: new Date(),});
+
+        await sureWin.save();
+        return res.status(201).json({message: "SureWin deposit created"})
+    } catch (error) {
+        console.log(error);
+    } 
+})
+
+
+router.get('/surewin/:email', async (req, res) => {
+    
+    try {
+        const userEmail = req.params.email;
+    
+        // Query the database to find the user by email
+        const user = await SureWin.findOne({ email: userEmail });
+    
+        if (!user) {
+          // If user not found, return 404 Not Found status
+          return res.send();
+        }
+    
+        // Return the user's information as a response
+        return res.json(user);
+      } catch (error) {
+        // Log the error message to the console for debugging
+        console.error('Error fetching user:', error);
+    
+        // Handle the error gracefully and return an error response
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+});
+
+router.put('/surewin/:email', async (req, res) =>{
+    const { email } = req.params;
+    const {winmoney } = req.body;
+    try{
+        if(!winmoney){
+            return res.status(400).json({ error: 'Invalid status value. Status must be either "accepted" or "rejected".' });
+        }
+
+        const updateDepositHistory = await SureWin.updateOne({ email }, {winmoney } );
+        
+        if (!updateDepositHistory) {
+            return res.status(404).json({ error: 'Deposit record not found' });
+          }
+      
+          return res.json(updateDepositHistory);
+    } catch (err){
+        console.log(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 
 module.exports = router
