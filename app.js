@@ -12,6 +12,7 @@ dotenv.config();
 require('./db/conn');
 const User = require('./model/userSchema');
 const SureWin = require("./model/surewinScema");
+const Countdown = require("./model/countdownSchema");
 
 app.use(express.json());
 app.use(cors());
@@ -29,6 +30,73 @@ const PORT = process.env.PORT;
 //     res.cookie("jwt", 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ');
 //     res.send(`Hello world from the server app.js`);
 // });
+
+// Function to start the countdown
+const startCountdown = async (countdownId, durationInSeconds) => {
+  try {
+    let countdown = await Countdown.findOne({ countdownId });
+
+    if (!countdown) {
+      // If the countdown doesn't exist, create a new one
+      countdown = new Countdown({ countdownId, secondsLeft: durationInSeconds });
+    }
+
+    // Countdown interval (every second)
+    const countdownInterval = setInterval(async () => {
+      console.log(`Countdown ${countdown.countdownId} - Time Left: ${countdown.secondsLeft} seconds`);
+
+      countdown.secondsLeft--;
+
+      if (countdown.secondsLeft <= 0) {
+        // Determine the winning color based on the lowest bet amount
+        let winningColor = null;
+        const colors = ['red', 'green', 'blue'];
+        let minBetAmount = Number.MAX_SAFE_INTEGER;
+    
+        for (const color of colors) {
+          if (countdown[color + 'BetAmount'] < minBetAmount) {
+            minBetAmount = countdown[color + 'BetAmount'];
+            winningColor = color;
+          }
+        }
+
+    // Update countdown status and winning color
+        countdown.status = 'finished';
+        countdown.winningColor = winningColor;
+        await countdown.save();
+
+        // Determine the winners and losers and update their deposited money accordingly
+    const users = await User.find({ betColor: winningColor });
+    for (const user of users) {
+      user.deposite = parseInt(user.deposite) + parseInt(user.betAmount) * 2; // Double the bet amount for the winners
+      user.betColor = null; // Clear the betColor field for all users
+      user.betAmount = 0; // Reset the betAmount field for all users
+      await user.save();
+    }
+       
+        console.log(`Countdown ${countdown.countdownId} - Time's up!`);
+        clearInterval(countdownInterval);
+
+        // Start the next countdown immediately
+        startCountdown(parseInt(countdown.countdownId) + 1, durationInSeconds);
+      } else {
+        await countdown.save();
+      }
+    }, 1000); // 1 second in milliseconds
+  } catch (error) {
+    console.error('Error starting countdown:', error);
+  }
+};
+ // Create a new Date object to get the current date and time
+ const currentDate = new Date();
+const currentDateOfMonth = currentDate.getDate();
+    const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
+    const currentYear = currentDate.getFullYear();
+    const id = currentYear + ''+ currentMonth + '' +currentDateOfMonth + '000'
+    console.log(id)
+
+// Start the first countdown with ID 1 and duration of 3 minutes (180 seconds)
+startCountdown(id, 180);
 
 const calculateDailyInterest = async () => {
     try {

@@ -8,6 +8,7 @@ const authenticate = require('../middleware/authenticate');
 const DepositHistory = require('../model/depositSchema');
 const SureWin = require('../model/surewinScema');
 const WithdrawHistory = require('../model/withdrawScema');
+const Countdown = require('../model/countdownSchema');
 require('../db/conn')
 
 router.get('/', (req, res) => {
@@ -33,7 +34,7 @@ router.post('/register', async (req, res) => {
         return res.status(422).res.json("not_match");
     }
     else{
-        const user = new User({name, email, phone, password,confirmpassword, deposite: 0, isAdmin: "false" })
+        const user = new User({name, email, phone, password,confirmpassword, deposite: 0,betColor:null, isAdmin: "false", })
 
         await user.save();
         res.status(201).json({message: "user registered successfully"});
@@ -378,6 +379,68 @@ router.post('/withdrawHistory', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
   })
+
+  router.get('/countdown', async (req, res) => {
+    const result = await Countdown.find();
+    return res.send(result);
+  })
+
+  router.get('/countdown/running', async (req, res) => {
+    try {
+          const status = 'running';
+          
+          const countdown = await Countdown.findOne({status: status});
+
+          if(!countdown) {
+            return res.status(404).json({ error: 'Countdown not found' });
+          }
+
+          return res.json(countdown);
+    }
+    catch (error) {
+        console.error('Error fetching user:', error);
+  
+      // Handle the error gracefully and return an error response
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  })
+
+  router.post('/bet', async (req, res) => {
+    try {
+      const { email, color, betAmount } = req.body;
+  
+      // Check if the user exists
+      const user = await User.findOne({ email: email });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Check if the countdown is running
+      const countdown = await Countdown.findOne({ status: 'running' });
+      if (!countdown) {
+        return res.status(400).json({ message: 'No active countdown found' });
+      }
+  
+      // Check if the user has enough money to place the bet
+      if (user.deposite < betAmount) {
+        return res.status(400).json({ message: 'Insufficient funds' });
+      }
+  
+      // Update the user's bet information
+      user.betColor = color;
+      user.betAmount = betAmount;
+      user.deposite = parseInt(user.deposite) - parseInt(betAmount);
+      await user.save();
+  
+      // Update the total bet amount for the chosen color in the countdown document
+      countdown[`${color}BetAmount`] += betAmount;
+      await countdown.save();
+  
+      res.status(200).json({ message: 'Bet placed successfully' });
+    } catch (err) {
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
 
 
 

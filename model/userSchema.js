@@ -27,6 +27,8 @@ const userSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    betColor: { type: String, default: null },
+    betAmount: { type: Number, default: 0 },
     isAdmin: {
         type: String,
         required: true
