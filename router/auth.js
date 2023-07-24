@@ -407,7 +407,8 @@ router.post('/withdrawHistory', async (req, res) => {
 
   router.post('/bet', async (req, res) => {
     try {
-      const { email, color, betAmount } = req.body;
+      const  { email, color, betAmount } = req.body;
+      const gamecharge = betAmount*0.98;
   
       // Check if the user exists
       const user = await User.findOne({ email: email });
@@ -428,7 +429,7 @@ router.post('/withdrawHistory', async (req, res) => {
   
       // Update the user's bet information
       user.betColor = color;
-      user.betAmount = betAmount;
+      user.betAmount = gamecharge;
       user.deposite = parseInt(user.deposite) - parseInt(betAmount);
       await user.save();
   
