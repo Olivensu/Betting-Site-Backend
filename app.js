@@ -31,95 +31,95 @@ const PORT = process.env.PORT;
 //     res.send(`Hello world from the server app.js`);
 // });
 
-let isCountdownRunning = false; // Flag to keep track of the countdown status
+let isCountdownRunning = false;
+let isCountdownProcessing = false; // New flag to prevent overlapping interval processing
 
-// Function to start the countdown
 const startCountdown = async (countdownId, durationInSeconds) => {
   if (isCountdownRunning) {
-    // If the countdown is already running, skip starting a new countdown
     return;
   }
 
   isCountdownRunning = true;
+
   try {
     let countdown = await Countdown.findOne({ countdownId });
 
     if (!countdown) {
-      // If the countdown doesn't exist, create a new one
       countdown = new Countdown({ countdownId, secondsLeft: durationInSeconds });
+      await countdown.save();
     }
 
-    // Countdown interval (every second)
     const countdownInterval = setInterval(async () => {
-      console.log(`Countdown ${countdown.countdownId} - Time Left: ${countdown.secondsLeft} seconds`);
+      // Check if the countdown is currently being processed
+      if (isCountdownProcessing) {
+        return;
+      }
 
+      isCountdownProcessing = true;
+
+      console.log(`Countdown ${countdown.countdownId} - Time Left: ${countdown.secondsLeft} seconds`);
       countdown.secondsLeft--;
 
       if (countdown.secondsLeft <= 0) {
-        countdown = await Countdown.findOne({ countdownId });
-            // Determine the winning color based on the lowest bet amount
-      let winningColor = null;
-      const colors = ['blue', 'red', 'green'];
-      let minBetAmount = Infinity;
-
-      for (const color of colors) {
-        console.log(`Comparing ${color} betAmount: ${countdown[color + 'BetAmount']} with minBetAmount: ${minBetAmount}`);
-        if (countdown[color + 'BetAmount'] < minBetAmount) {
-          minBetAmount = countdown[color + 'BetAmount'];
-          winningColor = color;
-        }
-      }
-      console.log(`Winning Color: ${winningColor}`);
-
-      // Update countdown status and winning color
-      countdown.status = 'finished';
-      countdown.winningColor = winningColor;
-      await countdown.save();
-
-        // Determine the winners and losers and update their deposited money accordingly
-    const users = await User.find({ betColor: winningColor });
-    for (const user of users) {
-      user.deposite = parseInt(user.deposite) + parseInt(user.betAmount) * 2; // Double the bet amount for the winners
-      user.betColor = null; // Clear the betColor field for all users
-      user.betAmount = 0; // Reset the betAmount field for all users
-      await user.save();
-    }
-       
-        console.log(`Countdown ${countdown.countdownId} - Time's up!`);
         clearInterval(countdownInterval);
+        countdown = await Countdown.findOne({ countdownId });
 
-        // Set a delay (e.g., 2 seconds) before allowing a new countdown to start
-        setTimeout(() => {
-          isCountdownRunning = false; // Reset the flag to allow starting a new countdown
-        }, 2000); // 2 seconds delay
+        let winningColor = null;
+        const colors = ['blue', 'red', 'green'];
+        let minBetAmount = Infinity;
 
-        // Start the next countdown after a delay (e.g., 2 seconds) to avoid ParallelSaveError
-    setTimeout(() => {
-      startCountdown(parseInt(countdown.countdownId) + 1, durationInSeconds);
-    }, 2000); // 2 seconds delay before starting the next countdown
+        for (const color of colors) {
+          if (countdown[color + 'BetAmount'] < minBetAmount) {
+            minBetAmount = countdown[color + 'BetAmount'];
+            winningColor = color;
+          }
+        }
 
-      } else {
+        countdown.status = 'finished';
+        countdown.winningColor = winningColor;
         await countdown.save();
+
+        const users = await User.find({ betColor: winningColor });
+        for (const user of users) {
+          user.deposite = parseInt(user.deposite) + parseInt(user.betAmount) * 2;
+          user.betColor = null;
+          user.betAmount = 0;
+          await user.save();
+        }
+
+        console.log(`Countdown ${countdown.countdownId} - Time's up!`);
+        isCountdownRunning = false;
+        isCountdownProcessing = false; // Reset the flag after interval processing
+
+        setTimeout(() => {
+          startCountdown(parseInt(countdown.countdownId) + 1, durationInSeconds);
+        }, 2000);
+      } else {
+        // Save the countdown document and reset the flag after save
+        await countdown.save();
+        isCountdownProcessing = false;
       }
-    }, 1000); // 1 second in milliseconds
-  } catch (error) {
-    isCountdownRunning = false; // Reset the flag in case of an error
+    }, 1000);
+  } catch (error) { 
+    isCountdownRunning = false;
+    isCountdownProcessing = false; // Reset the flag in case of an error
     console.error('Error starting countdown:', error);
   }
 };
+
  // Create a new Date object to get the current date and time
  const currentDate = new Date();
 const currentDateOfMonth = currentDate.getDate();
     const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
     const currentYear = currentDate.getFullYear();
-    const id = currentYear + ''+ currentMonth + '' +currentDateOfMonth + '053'
+    const id = currentYear + ''+ currentMonth + '' +currentDateOfMonth + '000'
     console.log(id)
 
 // Start the first countdown with ID 1 and duration of 3 minutes (180 seconds)
 startCountdown(id, 180);
 
 const calculateDailyInterest = async () => {
-    try {
+    try {  
         const deposites = await SureWin.find();
 
         for(const deposit of deposites) {
