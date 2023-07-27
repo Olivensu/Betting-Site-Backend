@@ -31,15 +31,15 @@ const PORT = process.env.PORT;
 //     res.send(`Hello world from the server app.js`);
 // });
 
-let isCountdownRunning = false;
+// let isCountdownRunning = false;
 let isCountdownProcessing = false; // New flag to prevent overlapping interval processing
 
 const startCountdown = async (countdownId, durationInSeconds) => {
-  if (isCountdownRunning) {
-    return;
-  }
+  // if (isCountdownRunning) {
+  //   return;
+  // }
 
-  isCountdownRunning = true;
+  // isCountdownRunning = true;
 
   try {
     let countdown = await Countdown.findOne({ countdownId });
@@ -92,7 +92,21 @@ const startCountdown = async (countdownId, durationInSeconds) => {
         isCountdownProcessing = false; // Reset the flag after interval processing
 
         setTimeout(() => {
-          startCountdown(parseInt(countdown.countdownId) + 1, durationInSeconds);
+          const currentDate = new Date();
+const currentDateOfMonth = currentDate.getDate();
+const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
+const currentYear = currentDate.getFullYear();
+
+// Get current hour and minute
+const currentHour = currentDate.getHours();
+const currentMinute = currentDate.getMinutes();
+
+// Add leading zeros if needed
+const formattedHour = currentHour.toString().padStart(2, '0');
+const formattedMinute = currentMinute.toString().padStart(2, '0');
+
+const id = currentYear + '' + currentMonth + '' + currentDateOfMonth + '' + formattedHour + '' + formattedMinute;
+          startCountdown(parseInt(id), durationInSeconds);
         }, 2000);
       } else {
         // Save the countdown document and reset the flag after save
@@ -108,15 +122,53 @@ const startCountdown = async (countdownId, durationInSeconds) => {
 };
 
  // Create a new Date object to get the current date and time
- const currentDate = new Date();
-const currentDateOfMonth = currentDate.getDate();
-    const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
-    const currentYear = currentDate.getFullYear();
-    const id = currentYear + ''+ currentMonth + '' +currentDateOfMonth + '000'
-    console.log(id)
+//  const currentDate = new Date();
+// const currentDateOfMonth = currentDate.getDate();
+//     const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
+//     const currentYear = currentDate.getFullYear();
+//     const id = currentYear + ''+ currentMonth + '' +currentDateOfMonth + '000'
+//     console.log(id)
 
 // Start the first countdown with ID 1 and duration of 3 minutes (180 seconds)
-startCountdown(id, 180);
+// startCountdown(id, 180);
+
+const runningCountdown = async (status) => {
+  try {
+        if(status = 'running'){
+
+        const countdown = await Countdown.findOne({status: status});
+        console.log(countdown.countdownId);
+
+        if(!countdown) {
+           return //res.status(404).json({ error: 'Countdown not found' });
+        }
+        await startCountdown(countdown.countdownId, 180);
+        return //console.log(res.json(countdown));
+        }else{
+          return
+        }
+        
+        // const countdown = await Countdown.findOne({status: status});
+        // console.log(countdown.countdownId);
+
+        // if(!countdown) {
+        //   return res.status(404).json({ error: 'Countdown not found' });
+        // }
+        // await startCountdown(countdown.countdownId, 180);
+
+        // return res.json(countdown);
+  }
+  catch (error) {
+      console.error('Error fetching user:', error);
+
+    // Handle the error gracefully and return an error response
+    // return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+const status = 'running';
+
+runningCountdown(status);
 
 const calculateDailyInterest = async () => {
     try {  
