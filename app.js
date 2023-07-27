@@ -31,15 +31,15 @@ const PORT = process.env.PORT;
 //     res.send(`Hello world from the server app.js`);
 // });
 
-// let isCountdownRunning = false;
+let isCountdownRunning = false;
 let isCountdownProcessing = false; // New flag to prevent overlapping interval processing
 
 const startCountdown = async (countdownId, durationInSeconds) => {
-  // if (isCountdownRunning) {
-  //   return;
-  // }
+  if (isCountdownRunning) {
+    return;
+  }
 
-  // isCountdownRunning = true;
+  isCountdownRunning = true;
 
   try {
     let countdown = await Countdown.findOne({ countdownId });
