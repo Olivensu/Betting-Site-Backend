@@ -31,6 +31,24 @@ const PORT = process.env.PORT;
 //     res.send(`Hello world from the server app.js`);
 // });
 
+// Function to start a new countdown after a delay
+const startNextCountdown = async (durationInSeconds) => {
+  const currentDate = new Date();
+  const currentDateOfMonth = currentDate.getDate();
+  const currentMonth = currentDate.getMonth() + 1;
+  const currentYear = currentDate.getFullYear();
+
+  const currentHour = currentDate.getHours();
+  const currentMinute = currentDate.getMinutes();
+
+  const formattedHour = currentHour.toString().padStart(2, '0');
+  const formattedMinute = currentMinute.toString().padStart(2, '0');
+
+  const id = currentYear + '' + currentMonth + '' + currentDateOfMonth + '' + formattedHour + '' + formattedMinute;
+
+  await startCountdown(parseInt(id), durationInSeconds);
+};
+
 let isCountdownRunning = false;
 let isCountdownProcessing = false; // New flag to prevent overlapping interval processing
 
@@ -91,25 +109,10 @@ const startCountdown = async (countdownId, durationInSeconds) => {
         isCountdownRunning = false;
         isCountdownProcessing = false; // Reset the flag after interval processing
 
-        setTimeout(() => {
-          const currentDate = new Date();
-const currentDateOfMonth = currentDate.getDate();
-const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
-const currentYear = currentDate.getFullYear();
-
-// Get current hour and minute
-const currentHour = currentDate.getHours();
-const currentMinute = currentDate.getMinutes();
-
-// Add leading zeros if needed
-const formattedHour = currentHour.toString().padStart(2, '0');
-const formattedMinute = currentMinute.toString().padStart(2, '0');
-
-const id = currentYear + '' + currentMonth + '' + currentDateOfMonth + '' + formattedHour + '' + formattedMinute;
-          startCountdown(parseInt(id), durationInSeconds);
+        setTimeout(async () => {
+          await startNextCountdown(durationInSeconds);
         }, 2000);
       } else {
-        // Save the countdown document and reset the flag after save
         await countdown.save();
         isCountdownProcessing = false;
       }
