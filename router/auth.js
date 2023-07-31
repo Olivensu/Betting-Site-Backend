@@ -8,7 +8,7 @@ const authenticate = require('../middleware/authenticate');
 const DepositHistory = require('../model/depositSchema');
 const SureWin = require('../model/surewinScema');
 const WithdrawHistory = require('../model/withdrawScema');
-const Countdown = require('../model/countdownSchema');
+const {Countdown, Bet} = require('../model/countdownSchema');
 require('../db/conn')
 
 router.get('/', (req, res) => {
@@ -426,6 +426,15 @@ router.post('/withdrawHistory', async (req, res) => {
       if (user.deposite < betAmount) {
         return res.status(400).json({ message: 'Insufficient funds' });
       }
+
+      // Create a new Bet document for the user's bet
+    const bet = new Bet({
+      email: email,
+      color,
+      amount: gamecharge,
+    });
+
+    user.bets.push({ color, amount:gamecharge });
   
       // Update the user's bet information
       user.betColor = color;
@@ -435,6 +444,8 @@ router.post('/withdrawHistory', async (req, res) => {
   
       // Update the total bet amount for the chosen color in the countdown document
       countdown[`${color}BetAmount`] += betAmount;
+       // Add the bet to the bets array
+      countdown.bets.push(bet);
       await countdown.save();
   
       res.status(200).json({ message: 'Bet placed successfully' });
@@ -442,7 +453,5 @@ router.post('/withdrawHistory', async (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
     }
   });
-
-
 
 module.exports = router

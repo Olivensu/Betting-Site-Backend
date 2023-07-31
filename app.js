@@ -12,7 +12,7 @@ dotenv.config();
 require('./db/conn');
 const User = require('./model/userSchema');
 const SureWin = require("./model/surewinScema");
-const Countdown = require("./model/countdownSchema");
+const {Countdown} = require("./model/countdownSchema");
 
 app.use(express.json());
 app.use(cors());
@@ -97,13 +97,37 @@ const startCountdown = async (countdownId, durationInSeconds) => {
         countdown.winningColor = winningColor;
         await countdown.save();
 
-        const users = await User.find({ betColor: winningColor });
+        // Step 1: Retrieve Users Who Placed Bets on the Winning Color
+    const users = await User.find({ 'bets.color': winningColor });
+
+    // Step 2: Calculate and Update Winnings for Each User
         for (const user of users) {
-          user.deposite = parseInt(user.deposite) + parseInt(user.betAmount) * 2;
-          user.betColor = null;
-          user.betAmount = 0;
+          const totalWinnings = user.bets.reduce((total, bet) => {
+            if (bet.color === winningColor) {
+              const winningsOnColor = bet.amount * 2;
+              return total + winningsOnColor;
+            }
+            return total;
+          }, 0);
+    
+          // Update the user's balance with the total winnings
+          user.deposite += totalWinnings;
+    
+          // Clear the user's bet details for the winning color
+          user.bets = user.bets.filter((bet) => bet.color !== winningColor);
+    
+          // Save the changes to the user in the database
           await user.save();
         }
+        // for (const user of users) {
+        //   let totalWinnings = 0;
+
+        
+        //   // user.deposite = parseInt(user.deposite) + parseInt(user.betAmount) * 2;
+        //   // user.betColor = null;
+        //   // user.betAmount = 0;
+        //   // await user.save();
+        // }
 
         console.log(`Countdown ${countdown.countdownId} - Time's up!`);
         isCountdownRunning = false;
@@ -124,25 +148,25 @@ const startCountdown = async (countdownId, durationInSeconds) => {
   }
 };
 
- // Create a new Date object to get the current date and time
-//  const currentDate = new Date();
-// const currentDateOfMonth = currentDate.getDate();
-//     const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
-//     const currentYear = currentDate.getFullYear();
-//     const id = currentYear + ''+ currentMonth + '' +currentDateOfMonth + '000'
+// //  Create a new Date object to get the current date and time
+ const currentDate = new Date();
+const currentDateOfMonth = currentDate.getDate();
+    const currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so we add 1 to get the correct month number
+    const currentYear = currentDate.getFullYear();
+    const id = currentYear + ''+ currentMonth + '' +currentDateOfMonth + '000'
 //     console.log(id)
 
-// Start the first countdown with ID 1 and duration of 3 minutes (180 seconds)
+// // Start the first countdown with ID 1 and duration of 3 minutes (180 seconds)
 // startCountdown(id, 180);
-
 const runningCountdown = async (status) => {
   try {
         if(status = 'running'){
 
         const countdown = await Countdown.findOne({status: status});
-        console.log(countdown.countdownId);
+        console.log(countdown?.countdownId);
 
         if(!countdown) {
+          startCountdown(id, 180)
            return //res.status(404).json({ error: 'Countdown not found' });
         }
         await startCountdown(countdown.countdownId, 180);
@@ -169,7 +193,7 @@ const runningCountdown = async (status) => {
   }
 }
 
-const status = 'running';
+let status = 'running';
 
 runningCountdown(status);
 

@@ -2,6 +2,19 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// Define the Bet schema
+const betSchema = new mongoose.Schema({
+    color: {
+      type: String,
+      enum: ['red', 'green', 'blue'],
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+  });
+
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -27,8 +40,9 @@ const userSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    betColor: { type: String, default: null },
-    betAmount: { type: Number, default: 0 },
+    bets: [betSchema],
+    // betColor: { type: String, default: null },
+    // betAmount: { type: Number, default: 0 },
     isAdmin: {
         type: String,
         required: true
