@@ -430,16 +430,19 @@ router.post('/withdrawHistory', async (req, res) => {
       // Create a new Bet document for the user's bet
     const bet = new Bet({
       email: email,
+      countdownId: countdown.countdownId,
       color,
       amount: gamecharge,
     });
 
-    user.bets.push({ color, amount:gamecharge });
+    await bet.save();
+
+    user.bets.push({countdownId: countdown.countdownId, color, amount:gamecharge });
   
       // Update the user's bet information
-      user.betColor = color;
-      user.betAmount = gamecharge;
-      user.deposite = parseInt(user.deposite) - parseInt(betAmount);
+      // user.betColor = color;
+      // user.betAmount = gamecharge;
+      user.deposite = parseInt(user.deposite) - parseInt(gamecharge);
       await user.save();
   
       // Update the total bet amount for the chosen color in the countdown document
@@ -450,6 +453,7 @@ router.post('/withdrawHistory', async (req, res) => {
   
       res.status(200).json({ message: 'Bet placed successfully' });
     } catch (err) {
+      console.error(err);
       res.status(500).json({ message: 'Internal server error' });
     }
   });

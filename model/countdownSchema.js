@@ -6,6 +6,10 @@ const betSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  countdownId: {
+    type: Number,
+    required: true,
+  },
   color: {
     type: String,
     enum: ['red', 'green', 'blue'],

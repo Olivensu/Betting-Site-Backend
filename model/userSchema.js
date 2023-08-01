@@ -4,6 +4,9 @@ const jwt = require('jsonwebtoken');
 
 // Define the Bet schema
 const betSchema = new mongoose.Schema({
+    countdownId: {
+        type: Number,
+      },
     color: {
       type: String,
       enum: ['red', 'green', 'blue'],

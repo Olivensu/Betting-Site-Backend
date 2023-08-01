@@ -22,6 +22,7 @@ app.use(bodyParser.json());
 
 // we link the router files to make our route easy 
 app.use(require('./router/auth'));
+app.use(require('./router/baccarat'));
 
 const PORT = process.env.PORT;
 
@@ -102,7 +103,11 @@ const startCountdown = async (countdownId, durationInSeconds) => {
 
     // Step 2: Calculate and Update Winnings for Each User
         for (const user of users) {
-          const totalWinnings = user.bets.reduce((total, bet) => {
+          const betsForCurrentCountdown = user.bets.filter((bet) =>{
+            return bet.countdownId === countdownId && bet.color === winningColor;
+          })
+          const totalWinnings = betsForCurrentCountdown.reduce((total, bet) => {
+            // console.log(totalWinnings)
             if (bet.color === winningColor) {
               const winningsOnColor = bet.amount * 2;
               return total + winningsOnColor;
