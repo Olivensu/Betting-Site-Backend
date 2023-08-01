@@ -35,7 +35,7 @@ const PORT = process.env.PORT;
 // Function to start a new countdown after a delay
 const startNextCountdown = async (durationInSeconds) => {
   const currentDate = new Date();
-  const currentDateOfMonth = currentDate.getDate();
+  let currentDateOfMonth = currentDate.getDate();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
 
@@ -44,6 +44,9 @@ const startNextCountdown = async (durationInSeconds) => {
 
   const formattedHour = currentHour.toString().padStart(2, '0');
   const formattedMinute = currentMinute.toString().padStart(2, '0');
+  if(currentDateOfMonth<10){
+    currentDateOfMonth= '0' + currentDateOfMonth;
+  }
 
   const id = currentYear + '' + currentMonth + '' + currentDateOfMonth + '' + formattedHour + '' + formattedMinute;
 

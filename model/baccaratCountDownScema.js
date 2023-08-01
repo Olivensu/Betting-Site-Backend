@@ -2,14 +2,18 @@ const mongoose = require('mongoose');
 
 // Define bet schema
 
-const betSchema = new mongoose.Schema({
+const baccaratBetSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
       },
+      countdownId: {
+        type: Number,
+        required: true,
+      },
       color: {
         type: String,
-        enum: ['red', 'green', 'blue'],
+        enum: ['player', 'tie', 'banker'],
         required: true,
       },
       amount: {
@@ -49,8 +53,10 @@ const baccaratCountdownSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    bets: [betSchema],
+    bets: [baccaratBetSchema],
 })
 
 const BaccaratCountdown = mongoose.model('BaccaratCountdown', baccaratCountdownSchema);
-// const Bet
+const BaccaratBet = mongoose.model('BaccaratBet', baccaratBetSchema);
+
+module.exports = {BaccaratCountdown, BaccaratBet};

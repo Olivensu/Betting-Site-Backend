@@ -9,7 +9,6 @@ const betSchema = new mongoose.Schema({
       },
     color: {
       type: String,
-      enum: ['red', 'green', 'blue'],
       required: true,
     },
     amount: {
@@ -45,7 +44,7 @@ const userSchema = new mongoose.Schema({
     },
     bets: [betSchema],
     // betColor: { type: String, default: null },
-    // betAmount: { type: Number, default: 0 },
+    betAmount: { type: Number, default: 0 },
     isAdmin: {
         type: String,
         required: true
