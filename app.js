@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const app = express(); 
 var cron = require('node-cron');
+const multer = require('multer');
 
 dotenv.config();
 
@@ -25,6 +26,31 @@ app.use(require('./router/auth'));
 app.use(require('./router/baccarat'));
 
 const PORT = process.env.PORT;
+
+// Configure Multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/uploads');
+  },
+  filename: (req, file, cb) => {
+    cb(null, 'poster.jpg'); // Set a fixed filename for the poster image
+  },
+});
+const upload = multer({ storage });
+
+// Serve static files
+app.use(express.static('public'));
+
+// Handle poster image upload
+app.post('/upload-poster', upload.single('posterImage'), (req, res) => {
+  res.sendStatus(200);
+});
+
+// Serve the poster image
+app.get('/get-poster-image', (req, res) => {
+  const posterImageUrl = '/uploads/poster.jpg'; // Adjust the path as needed
+  res.json({ url: posterImageUrl });
+});
 
 
 // app.get('/', (req, res) => {
