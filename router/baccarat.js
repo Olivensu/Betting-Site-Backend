@@ -7,7 +7,7 @@ baccarat.get('/baccarat', (req,res)=>{
     res.send('Hello baccarat')
 })
 
-const startNextCountdown = async (durationInSeconds)=>{
+const startBaccaratNextCountdown = async (durationInSeconds)=>{
     const currentDate = new Date();
   let currentDateOfMonth = currentDate.getDate();
   const currentMonth = currentDate.getMonth() + 1;
@@ -24,13 +24,13 @@ const startNextCountdown = async (durationInSeconds)=>{
 
   const id = currentYear + '' + currentMonth + '' + currentDateOfMonth + '' + formattedHour + '' + formattedMinute;
 
-  await startCountdown(parseInt(id), durationInSeconds);
+  await startBaccaratCountdown(parseInt(id), durationInSeconds);
 }
 
 let isCountdownRunning = false; 
 let isCountdownProcessing = false; 
 
-const startCountdown = async (countdownId, durationInSeconds) =>{
+const startBaccaratCountdown = async (countdownId, durationInSeconds) =>{
     if(isCountdownRunning){
         return;
     }
@@ -53,7 +53,7 @@ const startCountdown = async (countdownId, durationInSeconds) =>{
             console.log(`BaccaratCountdown ${baccaratCountdown.countdownId} - Time Left: ${baccaratCountdown.secondsLeft} seconds`);
             baccaratCountdown.secondsLeft--;
 
-            if(baccaratCountdown.secondsLeft<0){
+            if(baccaratCountdown.secondsLeft<=0){
                 clearInterval(countdownInterval);
                 baccaratCountdown = await BaccaratCountdown.findOne({countdownId});
 
@@ -68,6 +68,7 @@ const startCountdown = async (countdownId, durationInSeconds) =>{
                         minBetAmount = baccaratCountdown[color + 'BetAmount'];
                         winningColor = color;
                 }
+            }
 
                 baccaratCountdown.status = 'finished';
                 baccaratCountdown.winningColor = winningColor;
@@ -75,29 +76,37 @@ const startCountdown = async (countdownId, durationInSeconds) =>{
 
                 const users = await User.find({ 'bets.color': winningColor });
 
-                for(const user of users){
-                    const betsForCurrentCountdown = user.bets.filter((bet)=>{
-                        return bet.countdownId === countdownId && bet.color === winningColor;
+                // Step 2: Calculate and Update Winnings for Each User
+                for (const user of users) {
+                    const betsForCurrentCountdown = user.bets.filter((bet) =>{
+                    return bet.countdownId === countdownId && bet.color === winningColor;
                     })
-
-                    const totalWinnings = betsForCurrentCountdown.reduce((total,bet) =>{
-                        if(bet.color === winningColor){
-                            let winningsOnColor = 0
-                            if(winningColor === 'player'){
-                                 winningsOnColor = bet.amount * 2;
-                            }
-                            else if(winningColor === 'tie'){
-                                 winningsOnColor = bet.amount * 3;
-                            }else{
-                                 winningsOnColor = bet.amount * 2;
-                            }
-                            return total + winningsOnColor;
-                        }
-                        return total
+                    const totalWinnings = betsForCurrentCountdown.reduce((total, bet) => {
+                    // console.log(totalWinnings)
+                    if ( bet.color === winningColor  && winningColor === 'player') {
+                        const winningsOnColor = bet.amount * 1.5;
+                        return total + winningsOnColor;
+                    }
+                    else if ( bet.color === winningColor  && winningColor === 'tie') {
+                        const winningsOnColor = bet.amount * 3;
+                        return total + winningsOnColor;
+                    }
+                    else if ( bet.color === winningColor  && winningColor === 'banker') {
+                        const winningsOnColor = bet.amount * 2;
+                        return total + winningsOnColor;
+                    }
+                    return total + winningsOnColor;
                     }, 0);
 
+                    console.log(totalWinnings)
+
+                    // Update the user's balance with the total winnings
                     user.deposite += totalWinnings;
 
+                    // Clear the user's bet details for the winning color
+                    user.bets = user.bets.filter((bet) => bet.color !== winningColor);
+
+                    // Save the changes to the user in the database
                     await user.save();
                 }
                     console.log(`Countdown ${baccaratCountdown.countdownId} - Time's up!`);
@@ -105,10 +114,9 @@ const startCountdown = async (countdownId, durationInSeconds) =>{
                     isCountdownProcessing = false;
 
                     setTimeout(async() => {
-                        await startNextCountdown(durationInSeconds);
+                        await startBaccaratNextCountdown(durationInSeconds);
                     }, 2000);
                 
-            }
         }else{
             await baccaratCountdown.save();
             isCountdownProcessing = false;
@@ -137,10 +145,10 @@ const runningCountdown = async (status) =>{
             console.log(baccaratCountdown?.countdownId);
 
             if(!baccaratCountdown){
-                await startCountdown(id, 180);
+                await startBaccaratCountdown(id, 180);
                 return;
             }
-            await startCountdown(baccaratCountdown?.countdownId, 180);
+            await startBaccaratCountdown(baccaratCountdown?.countdownId, 180);
             return
         }
         else{

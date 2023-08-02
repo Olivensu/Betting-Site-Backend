@@ -115,8 +115,10 @@ const startCountdown = async (countdownId, durationInSeconds) => {
               const winningsOnColor = bet.amount * 2;
               return total + winningsOnColor;
             }
-            return total;
+            return total + winningsOnColor;
           }, 0);
+
+          console.log(totalWinnings);
     
           // Update the user's balance with the total winnings
           user.deposite += totalWinnings;
