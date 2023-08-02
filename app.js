@@ -48,7 +48,7 @@ app.post('/upload-poster', upload.single('posterImage'), (req, res) => {
 
 // Serve the poster image
 app.get('/get-poster-image', (req, res) => {
-  const posterImageUrl = '/uploads/poster.jpg'; // Adjust the path as needed
+  const posterImageUrl = '/public/uploads/poster.jpg'; // Adjust the path as needed
   res.json({ url: posterImageUrl });
 });
 
