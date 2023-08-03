@@ -17,11 +17,20 @@ router.get('/', (req, res) => {
 
 router.post('/register', async (req, res) => {
 
-    const {name, email, phone, password,confirmpassword } = req.body;
+    const {name, email, phone, password,confirmpassword, referralCode } = req.body;
 
     if(!name || !email || !phone || !password || !confirmpassword ) {
         return res.status(422).json({error: "Plz filled the field properly"})
     }
+
+    console.log(referralCode)
+
+    let deposite = 0
+    if(referralCode){
+      deposite=50;
+    }
+
+    let code = `${referralCode}@gmail.com`;
 
     try {
        const userExist = await User.findOne({email: email});
@@ -34,12 +43,18 @@ router.post('/register', async (req, res) => {
         return res.status(422).res.json("not_match");
     }
     else{
-        const user = new User({name, email, phone, password,confirmpassword, deposite: 0,betColor:null, isAdmin: "false", })
+        const user = new User({name, email, phone, password,confirmpassword, deposite: deposite,betColor:null, isAdmin: "false", })
 
         await user.save();
         res.status(201).json({message: "user registered successfully"});
     }
 
+    const userbonus = await User.findOne({email: code});
+    if(userbonus){
+      userbonus.deposite += 50;
+      await userbonus.save();
+    }
+    
 
     } catch (err) {
         console.log(err)
@@ -243,6 +258,8 @@ router.put('/users/:email', async (req, res)=>{
         return res.status(404).json({ error: 'All item are not filled' });
     }
 
+    const depositCharge = deposite*0.95;
+
     // Create a new Date object to get the current date and time
     const currentDate = new Date();
 
@@ -258,7 +275,7 @@ router.put('/users/:email', async (req, res)=>{
     let date = (`${currentDateOfMonth}/${currentMonth}/${currentYear}`);
 
     try {
-        const sureWin = new SureWin({name, email, phone, deposite, winmoney: deposite, date:date, time: time, lastInterestCalculationDate: new Date(),});
+        const sureWin = new SureWin({name, email, phone, deposite:depositCharge, winmoney: depositCharge, date:date, time: time, lastInterestCalculationDate: new Date(),});
 
         await sureWin.save();
         return res.status(201).json({message: "SureWin deposit created"})
@@ -408,7 +425,7 @@ router.post('/withdrawHistory', async (req, res) => {
   router.post('/bet', async (req, res) => {
     try {
       const  { email, color, betAmount } = req.body;
-      const gamecharge = betAmount*0.98;
+      const gamecharge = betAmount;
   
       // Check if the user exists
       const user = await User.findOne({ email: email });

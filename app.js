@@ -5,6 +5,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const app = express(); 
+const path = require('path');
 var cron = require('node-cron');
 const multer = require('multer');
 
@@ -25,33 +26,49 @@ app.use(bodyParser.json());
 app.use(require('./router/auth'));
 app.use(require('./router/baccarat'));
 
-const PORT = process.env.PORT;
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-// Configure Multer storage
+const PORT = process.env.PORT;
+// Set up multer storage for image uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads');
-  },
+  destination: 'uploads/',
   filename: (req, file, cb) => {
-    cb(null, 'poster.jpg'); // Set a fixed filename for the poster image
-  },
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
 });
 const upload = multer({ storage });
 
-// Serve static files
-app.use(express.static('public'));
+// Create a mongoose model for the image
+const Image = mongoose.model('Image', { filename: String });
 
-// Handle poster image upload
-app.post('/upload-poster', upload.single('posterImage'), (req, res) => {
-  res.sendStatus(200);
+// Endpoint to upload a poster image
+app.post('/api/uploadPoster', upload.single('poster'), async (req, res) => {
+  try {
+    const newImage = new Image({ filename: req.file.filename });
+    await newImage.save();
+    res.status(201).send('Image uploaded successfully');
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Serve the poster image
-app.get('/get-poster-image', (req, res) => {
-  const posterImageUrl = '/public/uploads/poster.jpg'; // Adjust the path as needed
-  res.json({ url: posterImageUrl });
+// Endpoint to get the latest poster image
+app.get('/api/getPosterImage', async (req, res) => {
+  try {
+    const latestImage = await Image.findOne().sort({ _id: -1 });
+    if (latestImage) {
+      const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${latestImage.filename}`;
+      res.status(200).json({ url: imageUrl });
+    } else {
+      res.status(404).json({ error: 'No image found' });
+    }
+  } catch (error) {
+    console.error('Error getting image:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
-
 
 // app.get('/', (req, res) => {
 //     res.cookie("jwt", 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ');

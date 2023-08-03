@@ -185,7 +185,7 @@ baccarat.get('/baccaratcountdown/running', async(req, res) =>{
 baccarat.post('/baccaratbet', async (req, res)=>{
     try {
         const {email, color, betAmount} = req.body;
-        const gamecharge = betAmount*0.98;
+        const gamecharge = betAmount;
 
         const user = await User.findOne({email});
         if(!user){
