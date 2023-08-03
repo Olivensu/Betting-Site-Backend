@@ -26,6 +26,7 @@ app.use(bodyParser.json());
 app.use(require('./router/auth'));
 app.use(require('./router/baccarat'));
 
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 const PORT = process.env.PORT;
 // Set up multer storage for image uploads
