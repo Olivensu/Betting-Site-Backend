@@ -28,6 +28,15 @@ app.use(require('./router/baccarat'));
 
 
 const PORT = process.env.PORT;
+// Set up multer storage for image uploads
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
 
 // Create a mongoose model for the image
 const Image = mongoose.model('Image', { filename: String });
