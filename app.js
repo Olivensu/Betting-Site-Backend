@@ -29,6 +29,40 @@ app.use(require('./router/baccarat'));
 app.use(express.static('public'));
 
 const PORT = process.env.PORT;
+
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage });
+
+// app.post('/api/uploadImage', upload.single('image'), async (req, res) => {
+//   try {
+//     const { originalname, mimetype, buffer } = req.file;
+//     const newImage = new Image({
+//       filename: originalname,
+//       contentType: mimetype,
+//       data: buffer,
+//     });
+//     await newImage.save();
+//     res.status(201).json({ message: 'Image uploaded successfully' });
+//   } catch (error) {
+//     console.error('Error uploading image:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
+// app.get('/api/getImage/:id', async (req, res) => {
+//   try {
+//     const image = await Image.findById(req.params.id);
+//     if (!image) {
+//       return res.status(404).json({ error: 'Image not found' });
+//     }
+//     res.set('Content-Type', image.contentType);
+//     res.send(image.data);
+//   } catch (error) {
+//     console.error('Error getting image:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
 // Set up multer storage for image uploads
 const storage = multer.diskStorage({
   destination: (req,file,cb)=>{
@@ -41,10 +75,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// // Create a mongoose model for the image
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage });
+// // // Create a mongoose model for the image
 const Image = mongoose.model('Image', { filename: String });
 
-// // Endpoint to upload a poster image
+// // // Endpoint to upload a poster image
 app.post('/uploadPoster', upload.single('file'), async (req, res) => {
   try {
     const newImage = new Image({ filename: req.file.filename });
@@ -56,12 +92,12 @@ app.post('/uploadPoster', upload.single('file'), async (req, res) => {
   }
 });
 
-// // Endpoint to get the latest poster image
+// Endpoint to get the latest poster image
 app.get('/getPosterImage', async (req, res) => {
   try {
     const latestImage = await Image.findOne().sort({ _id: -1 });
     if (latestImage) {
-      const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${latestImage.filename}`;
+      const imageUrl = `https://betting-site-backend.vercel.app/uploads/${latestImage.filename}`;
       res.status(200).json({ url: imageUrl });
     } else {
       res.status(404).json({ error: 'No image found' });
