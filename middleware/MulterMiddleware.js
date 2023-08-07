@@ -11,14 +11,6 @@ const storage = multer.diskStorage({
     }
 });
 
-// const fileFilter = (req, file, cb)=>{
-//     const allowedFileTypes = ["image/jped", "image/jpg", "image/png"]
-//     if(allowedFileTypes.includes(file.mimetype)){
-//         cb(null,true)
-//     }else{
-//         cb(null,false)
-//     }
-// }
 
 const uploadMiddleware = multer({storage})
 

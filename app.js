@@ -22,6 +22,7 @@ app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 const UploadRoute = require("./router/UploadRoute")
+console.log("Working Directory:", __dirname);
 
 // we link the router files to make our route easy 
 app.use(require('./router/auth'));
