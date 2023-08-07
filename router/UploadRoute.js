@@ -9,10 +9,10 @@ router.get('/api/get', async(req,res)=>{
     res.send(allPhotots)
 });
 
-router.post("/api/save", uploadMiddleware.single("photo"), (req, res)=>{
+router.post("/api/save", uploadMiddleware.single("photo"), async (req, res)=>{
     const photo = req.file.filename;
     console.log(photo);
-    UploadModel.create({photo})
+    await UploadModel.create({photo})
     .then((data)=>{
         console.log("Uploaded successfully...");
         console.log(data);
