@@ -30,86 +30,10 @@ app.use(require('./router/baccarat'));
 
 app.use(express.static("public"));
 
-// app.use('/', express.static('upload'));
 app.use(UploadRoute)
 
 const PORT = process.env.PORT;
 
-// const storage = multer.memoryStorage();
-// const upload = multer({ storage });
-
-// app.post('/api/uploadImage', upload.single('image'), async (req, res) => {
-//   try {
-//     const { originalname, mimetype, buffer } = req.file;
-//     const newImage = new Image({
-//       filename: originalname,
-//       contentType: mimetype,
-//       data: buffer,
-//     });
-//     await newImage.save();
-//     res.status(201).json({ message: 'Image uploaded successfully' });
-//   } catch (error) {
-//     console.error('Error uploading image:', error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// });
-
-// app.get('/api/getImage/:id', async (req, res) => {
-//   try {
-//     const image = await Image.findById(req.params.id);
-//     if (!image) {
-//       return res.status(404).json({ error: 'Image not found' });
-//     }
-//     res.set('Content-Type', image.contentType);
-//     res.send(image.data);
-//   } catch (error) {
-//     console.error('Error getting image:', error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// });
-
-// Set up multer storage for image uploads
-// const storage = multer.diskStorage({
-//   destination: (req,file,cb)=>{
-//     cb(null, 'public/uploads')
-//   },
-//   filename: (req, file, cb) => {
-//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-//     cb(null, file.fieldname +"_"+Date.now()+ path.extname(file.originalname));
-//   }
-// });
-// const upload = multer({ storage });
-
-// // // Create a mongoose model for the image
-// const Image = mongoose.model('Image', { filename: String });
-
-// // // // Endpoint to upload a poster image
-// app.post('/uploadPoster', upload.single('file'), async (req, res) => {
-//   try {
-//     const newImage = new Image({ filename: req.file.filename });
-//     await newImage.save();
-//     res.status(201).send('Image uploaded successfully');
-//   } catch (error) {
-//     console.error('Error uploading image:', error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// });
-
-// // Endpoint to get the latest poster image
-// app.get('/getPosterImage', async (req, res) => {
-//   try {
-//     const latestImage = await Image.findOne().sort({ _id: -1 });
-//     if (latestImage) {
-//       const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${latestImage.filename}`;
-//       res.status(200).json({ url: imageUrl });
-//     } else {
-//       res.status(404).json({ error: 'No image found' });
-//     }
-//   } catch (error) {
-//     console.error('Error getting image:', error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// });
 
 // app.get('/', (req, res) => {
 //     res.cookie("jwt", 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ');
