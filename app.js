@@ -152,7 +152,7 @@ const startCountdown = async (countdownId, durationInSeconds) => {
         isCountdownProcessing = false; // Reset the flag after interval processing
 
         setTimeout(async () => {
-          await startNextCountdown(durationInSeconds);
+          await startNextCountdown(180);
         }, 2000);
       } else {
         await countdown.save();
@@ -173,6 +173,9 @@ const deleteCountdown = async(req, res)=>{
 
     // Delete running countdowns with IDs greater than the first countdown
     const firstCountdown = allCountdowns[0];
+    if(!firstCountdown){
+      return res.send({massage: 'Not found'})
+    }
     console.log(firstCountdown)
     await Countdown.deleteMany({ _id: { $gt: firstCountdown._id } });
 

@@ -114,7 +114,7 @@ const startBaccaratCountdown = async (countdownId, durationInSeconds) =>{
                     isCountdownProcessing = false;
 
                     setTimeout(async() => {
-                        await startBaccaratNextCountdown(durationInSeconds);
+                        await startBaccaratNextCountdown(180);
                     }, 2000);
                 
         }else{
@@ -139,8 +139,12 @@ const deleteCountdown = async(req, res)=>{
 
     // Delete running countdowns with IDs greater than the first countdown
     const firstCountdown = allCountdowns[0];
+    if(!firstCountdown){
+        return res.send({massage: 'Not found'})
+    }
     console.log(firstCountdown)
     await BaccaratCountdown.deleteMany({ _id: { $gt: firstCountdown._id } });
+    
 
     // Return the first countdown
     // res.status(200).json(firstCountdown);
