@@ -130,6 +130,28 @@ const startBaccaratCountdown = async (countdownId, durationInSeconds) =>{
     }
 };
 
+// delete running countdown
+
+const deleteCountdown = async(req, res)=>{
+    try {
+      // Get all countdowns from the database
+    const allCountdowns = await BaccaratCountdown.find({status: "running"}).sort();
+
+    // Delete running countdowns with IDs greater than the first countdown
+    const firstCountdown = allCountdowns[0];
+    console.log(firstCountdown)
+    await BaccaratCountdown.deleteMany({ _id: { $gt: firstCountdown._id } });
+
+    // Return the first countdown
+    // res.status(200).json(firstCountdown);
+    } catch (error) {
+      console.error('Error managing countdowns:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  }
+  
+  deleteCountdown()
+
 // find running countdown of baccarat
 
 const currentDate = new Date();
