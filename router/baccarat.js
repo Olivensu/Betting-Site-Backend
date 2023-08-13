@@ -170,7 +170,7 @@ const runningCountdown = async (status) =>{
                 await startBaccaratCountdown(id, 180);
                 return;
             }
-            await startBaccaratCountdown(baccaratCountdown?.countdownId, 180);
+            await startBaccaratCountdown(baccaratCountdown?.countdownId, baccaratCountdown.secondsLeft);
             return
         }
         else{

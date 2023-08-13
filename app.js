@@ -207,7 +207,7 @@ const runningCountdown = async (status) => {
           startCountdown(id, 180)
            return //res.status(404).json({ error: 'Countdown not found' });
         }
-        await startCountdown(countdown.countdownId, 180);
+        await startCountdown(countdown.countdownId, countdown.secondsLeft);
         return //console.log(res.json(countdown));
         }else{
           return
