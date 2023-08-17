@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
 
     let deposite = 0
     if(referralCode){
-      deposite=50;
+      deposite=10;
     }
 
     let code = `${referralCode}@gmail.com`;
@@ -51,7 +51,7 @@ router.post('/register', async (req, res) => {
 
     const userbonus = await User.findOne({email: code});
     if(userbonus){
-      userbonus.deposite += 50;
+      userbonus.deposite += 10;
       await userbonus.save();
     }
     
