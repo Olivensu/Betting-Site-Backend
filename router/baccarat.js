@@ -200,8 +200,8 @@ runningCountdown(status);
 
 
 baccarat.get('/baccaratcountdown', async (req, res) => {
-    const result = await BaccaratCountdown.find();
-    return res.send(result);
+    const baccaratcountdownresult = await BaccaratCountdown.find();
+    return res.send(baccaratcountdownresult);
   })
 
 baccarat.get('/baccaratcountdown/running', async(req, res) =>{
@@ -227,30 +227,30 @@ baccarat.post('/baccaratbet', async (req, res)=>{
             return res.status(404).json({message: 'User not found'})
         }
 
-        const countdown = await BaccaratCountdown.findOne({status: 'running'});
-        if(!countdown){
+        const baccaratcountdown = await BaccaratCountdown.findOne({status: 'running'});
+        if(!baccaratcountdown){
             return res.status(404).json({message: 'Countdown not found'});
         }
 
         const bet = new BaccaratBet({
             email,
-            countdownId: countdown.countdownId,
+            countdownId: baccaratcountdown.countdownId,
             color:color,
             amount: gamecharge,
         })
 
         await bet.save();
 
-        user.bets.push({countdownId: countdown.countdownId, color, amount:gamecharge})
+        user.bets.push({countdownId: baccaratcountdown.countdownId, color, amount:gamecharge})
         
         user.deposite-= parseInt(gamecharge);
         await user.save();
 
-        countdown[`${color}BetAmount`]+= betAmount;
+        baccaratcountdown[`${color}BetAmount`]+= betAmount;
 
-        countdown.bets.push(bet);
+        baccaratcountdown.bets.push(bet);
 
-        await countdown.save();
+        await baccaratcountdown.save();
         res.status(200).json({message: 'Bet placed successfully'});
     } catch (error) {
         console.error(error);
