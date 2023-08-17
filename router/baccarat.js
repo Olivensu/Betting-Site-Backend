@@ -8,7 +8,10 @@ baccarat.get('/baccarat', (req,res)=>{
 })
 
 const startBaccaratNextCountdown = async (durationInSeconds)=>{
-    const currentDate = new Date();
+    const bangladeshTimeZone = 'Asia/Dhaka';
+
+const currentDateObj  = new Date().toLocaleString('en-US', { timeZone: bangladeshTimeZone });
+const currentDate = new Date(currentDateObj);
   let currentDateOfMonth = currentDate.getDate();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
@@ -64,10 +67,14 @@ const startBaccaratCountdown = async (countdownId, durationInSeconds) =>{
                 let minBetAmount = Infinity;
 
                 for(const color of colors){
+                    
                     if(baccaratCountdown[color + 'BetAmount'] < minBetAmount){
                         minBetAmount = baccaratCountdown[color + 'BetAmount'];
                         winningColor = color;
                 }
+            }
+            if(baccaratCountdown.playerBetAmount === 0 && baccaratCountdown.tieBetAmount === 0 && baccaratCountdown.bankerBetAmount === 0){
+                winningColor = Math.floor(Math.random() * colors.length);
             }
 
                 baccaratCountdown.status = 'finished';
@@ -139,9 +146,9 @@ const deleteCountdown = async(req, res)=>{
 
     // Delete running countdowns with IDs greater than the first countdown
     const firstCountdown = allCountdowns[0];
-    if(!firstCountdown){
-        return res.send({massage: 'Not found'})
-    }
+    if (!firstCountdown || typeof firstCountdown !== 'object') {
+        return res.status(404).send("Countdown not found");
+      }
     console.log(firstCountdown)
     await BaccaratCountdown.deleteMany({ _id: { $gt: firstCountdown._id } });
     

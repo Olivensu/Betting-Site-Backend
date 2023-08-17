@@ -42,7 +42,10 @@ const PORT = process.env.PORT;
 
 // Function to start a new countdown after a delay
 const startNextCountdown = async (durationInSeconds) => {
-  const currentDate = new Date();
+  const bangladeshTimeZone = 'Asia/Dhaka';
+
+  const currentDateObj  = new Date().toLocaleString('en-US', { timeZone: bangladeshTimeZone });
+  const currentDate = new Date(currentDateObj);
   let currentDateOfMonth = currentDate.getDate();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
@@ -104,6 +107,10 @@ const startCountdown = async (countdownId, durationInSeconds) => {
             winningColor = color;
           }
         }
+
+        if(countdown.blueBetAmount === 0 && countdown.redBetAmount === 0 && countdown.greenBetAmount === 0){
+          winningColor = Math.floor(Math.random() * colors.length);
+      }
 
         countdown.status = 'finished';
         countdown.winningColor = winningColor;
@@ -173,8 +180,8 @@ const deleteCountdown = async(req, res)=>{
 
     // Delete running countdowns with IDs greater than the first countdown
     const firstCountdown = allCountdowns[0];
-    if(!firstCountdown){
-      return res.status(404);
+    if (!firstCountdown || typeof firstCountdown !== 'object') {
+      return res.status(404).send("Countdown not found");
     }
     console.log(firstCountdown)
     await Countdown.deleteMany({ _id: { $gt: firstCountdown._id } });
