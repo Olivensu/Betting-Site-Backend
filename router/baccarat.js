@@ -74,7 +74,9 @@ const startBaccaratCountdown = async (countdownId, durationInSeconds) =>{
                 }
             }
             if(baccaratCountdown.playerBetAmount === 0 && baccaratCountdown.tieBetAmount === 0 && baccaratCountdown.bankerBetAmount === 0){
-                winningColor = Math.floor(Math.random() * colors.length);
+                const randomIndex = Math.floor(Math.random() * colors.length);
+          winningColor = colors[randomIndex];
+          console.log(winningColor);
             }
 
                 baccaratCountdown.status = 'finished';

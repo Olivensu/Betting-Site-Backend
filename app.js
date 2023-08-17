@@ -109,7 +109,9 @@ const startCountdown = async (countdownId, durationInSeconds) => {
         }
 
         if(countdown.blueBetAmount === 0 && countdown.redBetAmount === 0 && countdown.greenBetAmount === 0){
-          winningColor = Math.floor(Math.random() * colors.length);
+          const randomIndex = Math.floor(Math.random() * colors.length);
+          winningColor = colors[randomIndex];
+          console.log(winningColor);
       }
 
         countdown.status = 'finished';
