@@ -174,7 +174,7 @@ const deleteCountdown = async(req, res)=>{
     // Delete running countdowns with IDs greater than the first countdown
     const firstCountdown = allCountdowns[0];
     if(!firstCountdown){
-      return res.send({massage: 'Not found'})
+      return res.status(404);
     }
     console.log(firstCountdown)
     await Countdown.deleteMany({ _id: { $gt: firstCountdown._id } });
@@ -183,7 +183,7 @@ const deleteCountdown = async(req, res)=>{
     // res.status(200).json(firstCountdown);
   } catch (error) {
     console.error('Error managing countdowns:', error);
-    res.status(500).send('Internal Server Error');
+    res.status(500);
   }
 }
 
@@ -235,8 +235,8 @@ const runningCountdown = async (status) => {
 }
 
 let status = 'running';
-
 runningCountdown(status);
+
 
 const calculateDailyInterest = async () => {
     try {  
@@ -270,10 +270,15 @@ const calculateDailyInterest = async () => {
   }
 }
 // Schedule the daily interest calculation every day at 00:00 (midnight)
-cron.schedule('0 * * * *', () => {
-    console.log('Calculating daily interest...');
+// cron.schedule('0 * * * * *', () => {
+//     console.log('Calculating daily interest...');
+//     calculateDailyInterest();
+// });
+app.get('/', (req, res)=>{
+  res.send('Hello')
+  console.log('Calculating daily interest...');
     calculateDailyInterest();
-});
+})
 
 // app.get('/api/updat', (req, res) => {
 //     // Set the appropriate headers for SSE

@@ -11,9 +11,9 @@ const WithdrawHistory = require('../model/withdrawScema');
 const {Countdown, Bet} = require('../model/countdownSchema');
 require('../db/conn')
 
-router.get('/', (req, res) => {
-    res.send('Hello world from the server router js')
-})
+// router.get('/', (req, res) => {
+//     res.send('Hello world from the server router js')
+// })
 
 router.post('/register', async (req, res) => {
 
@@ -258,7 +258,7 @@ router.put('/users/:email', async (req, res)=>{
         return res.status(404).json({ error: 'All item are not filled' });
     }
 
-    const depositCharge = deposite*0.95;
+    const depositCharge = deposite;
 
     // Create a new Date object to get the current date and time
     const currentDate = new Date();
@@ -275,7 +275,7 @@ router.put('/users/:email', async (req, res)=>{
     let date = (`${currentDateOfMonth}/${currentMonth}/${currentYear}`);
 
     try {
-        const sureWin = new SureWin({name, email, phone, deposite:depositCharge, winmoney: depositCharge, date:date, time: time, lastInterestCalculationDate: new Date(),});
+        const sureWin = new SureWin({name, email, phone, deposite:depositCharge, winmoney: depositCharge, date:date, time: new Date(), lastInterestCalculationDate: new Date(),});
 
         await sureWin.save();
         return res.status(201).json({message: "SureWin deposit created"})
@@ -311,13 +311,13 @@ router.get('/surewin/:email', async (req, res) => {
 
 router.put('/surewin/:email', async (req, res) =>{
     const { email } = req.params;
-    const {winmoney } = req.body;
+    const {winmoney, time } = req.body;
     try{
         if(!winmoney){
             return res.status(400).json({ error: 'Invalid status value. Status must be either "accepted" or "rejected".' });
         }
 
-        const updateDepositHistory = await SureWin.updateOne({ email }, {winmoney } );
+        const updateDepositHistory = await SureWin.updateOne({ email }, { $set: { winmoney, time:new Date() } } );
         
         if (!updateDepositHistory) {
             return res.status(404).json({ error: 'Deposit record not found' });

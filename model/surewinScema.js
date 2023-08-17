@@ -26,7 +26,7 @@ const sureWinSchema = new mongoose.Schema({
         required: true
     },
     time: {
-        type: String,
+        type: Date,
         required: true
     },
     lastInterestCalculationDate: { type: Date, required: true },

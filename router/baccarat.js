@@ -4,7 +4,7 @@ const User = require('../model/userSchema');
 const baccarat = express.Router();
 
 baccarat.get('/baccarat', (req,res)=>{
-    res.send('Hello baccarat')
+    runningCountdown(status);
 })
 
 const startBaccaratNextCountdown = async (durationInSeconds)=>{
