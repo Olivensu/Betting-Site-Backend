@@ -28,7 +28,7 @@ const UploadRoute = require("./router/UploadRoute")
 app.use(require('./router/auth'));
 app.use(require('./router/baccarat'));
 
-// app.use(express.static("public"));
+app.use(express.static("public"));
 app.use(express.static(".vercel/output/static"));
 
 app.use(UploadRoute)
