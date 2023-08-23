@@ -22,13 +22,14 @@ app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 const UploadRoute = require("./router/UploadRoute")
-console.log("Working Directory:", __dirname);
+// console.log("Working Directory:", __dirname);
 
 // we link the router files to make our route easy 
 app.use(require('./router/auth'));
 app.use(require('./router/baccarat'));
 
-app.use(express.static("public"));
+// app.use(express.static("public"));
+app.use(express.static(".vercel/output/static"));
 
 app.use(UploadRoute)
 
